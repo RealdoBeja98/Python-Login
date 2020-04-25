@@ -50,7 +50,7 @@ def register():
 def login():
     if request.method == "POST":
         username_request_taken = request.form.get("username")
-        password_request_taken = request.form.get("passqord")
+        password_request_taken = request.form.get("password")
         cursor.execute("SELECT username FROM Users WHERE username=? ", (username_request_taken,))
         username_fetched =  cursor.fetchone()
         cursor.execute("SELECT password FROM Users WHERE username=?", (username_request_taken,))
@@ -60,8 +60,9 @@ def login():
             flash("Username does not exists", "danger")
             return render_template("login.html")
         else:
-            for password in password_fetched:
-                if sha256_crypt.verify(password_request_taken, password):
+            for password_fetched_index in password_fetched:
+                if sha256_crypt.verify(password_request_taken, password_fetched_index):
+                    session["log"] = True
                     flash("You are now login", "success")
                     return redirect(url_for('photo'))
                 else:
@@ -69,6 +70,17 @@ def login():
                     return render_template("login.html")
     return render_template("login.html")
 
+
+@app.route("/photo")
+def photo():
+    return render_template("photo.html")
+
+
+@app.route("/logout")
+def logout():
+    session.clear()
+    flash("You are logged out", "success")
+    return redirect(url_for('home'))
 
 
 if __name__ == '__main__':
